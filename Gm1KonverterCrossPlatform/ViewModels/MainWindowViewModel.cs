@@ -16,6 +16,89 @@ namespace Gm1KonverterCrossPlatform.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase, IDisposable
     {
+        private double conversionProgress;
+        public double ConversionProgress
+        {
+            get => conversionProgress;
+            set => this.RaiseAndSetIfChanged(ref conversionProgress, value);
+        }
+
+        public async Task<(int SuccessCount, int TotalCount, List<string> ErrorMessages)> ConvertAllTgxFilesAsync(string tgxDirectory)
+        {
+            if (Logger.Loggeractiv) Logger.Log($"ConvertAllTgxFilesAsync started for directory: {tgxDirectory}");
+
+            var result = (SuccessCount: 0, TotalCount: 0, ErrorMessages: new List<string>());
+            ConversionProgress = 0;
+
+            try
+            {
+                // Получить список .tgx файлов
+                string[] tgxFiles = Utility.GetFileNames(tgxDirectory, "*.tgx");
+                result.TotalCount = tgxFiles.Length;
+
+                // Создать папку для экспорта
+                string exportPath = Path.Combine(UserConfig.WorkFolderPath, "ExportedTGX");
+                if (!Directory.Exists(exportPath))
+                {
+                    Directory.CreateDirectory(exportPath);
+                }
+
+                int processed = 0;
+                foreach (string tgxFile in tgxFiles)
+                {
+                    try
+                    {
+                        string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(tgxFile);
+                        string outputDir = Path.Combine(exportPath, fileNameWithoutExtension);
+                        string outputFile = Path.Combine(outputDir, $"{fileNameWithoutExtension}.png");
+
+                        // Декодировать .tgx файл
+                        await Task.Run(() => DecodeTgxData(tgxFile, null)); // null, так как MainWindow не нужен для экспорта
+                        if (TgxImage?.Bitmap == null)
+                        {
+                            result.ErrorMessages.Add($"Failed to decode {tgxFile}: Invalid data");
+                            continue;
+                        }
+
+                        // Создать папку для файла
+                        if (!Directory.Exists(outputDir))
+                        {
+                            Directory.CreateDirectory(outputDir);
+                        }
+
+                        // Сохранить как PNG
+                        TgxImage.Bitmap.Save(outputFile);
+
+                        // Сохранить резервную копию .tgx
+                        string saveTgxPath = Path.Combine(outputDir, $"{fileNameWithoutExtension}Save.tgx");
+                        if (!File.Exists(saveTgxPath))
+                        {
+                            File.Copy(Path.Combine(tgxDirectory, tgxFile), saveTgxPath, false);
+                        }
+
+                        result.SuccessCount++;
+                        processed++;
+                        ConversionProgress = (double)processed / result.TotalCount * 100;
+
+                        if (Logger.Loggeractiv) Logger.Log($"Successfully exported {tgxFile} to {outputFile}");
+                    }
+                    catch (Exception ex)
+                    {
+                        result.ErrorMessages.Add($"Error processing {tgxFile}: {ex.Message}");
+                        if (Logger.Loggeractiv) Logger.Log($"Exception processing {tgxFile}: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                result.ErrorMessages.Add($"General error: {ex.Message}");
+                if (Logger.Loggeractiv) Logger.Log($"Exception in ConvertAllTgxFilesAsync: {ex.Message}");
+            }
+
+            ConversionProgress = 100;
+            return result;
+        }
+        
         private UserConfig userConfig;
         public UserConfig UserConfig { get => userConfig; set => userConfig = value; }
 
