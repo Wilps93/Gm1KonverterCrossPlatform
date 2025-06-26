@@ -28,6 +28,62 @@ namespace Gm1KonverterCrossPlatform.Views
             this.DataContextChanged += ViewModelSet;
         }
 
+        // Добавляем новый метод
+        private async void MenuItem_ConvertAllTgx_Click(object sender, RoutedEventArgs e)
+        {
+            if (Logger.Loggeractiv) Logger.Log("\n>>MenuItem_ConvertAllTgx_Click start");
+
+            try
+            {
+                // Отключить UI и показать ProgressBar
+                vm.ButtonsEnabled = false;
+                Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Wait);
+                this.FindControl<ProgressBar>("ConversionProgress").IsVisible = true;
+
+                // Получить путь к папке gfx
+                string tgxDirectory = Path.Combine(vm.UserConfig.CrusaderPath, "gfx");
+                if (!Directory.Exists(tgxDirectory))
+                {
+                    await ShowMessageBox(MessageBoxWindow.MessageTyp.Error, Utility.GetText("DirectoryNotFound") + $": {tgxDirectory}");
+                    return;
+                }
+
+                // Конвертировать все .tgx файлы
+                var result = await vm.ConvertAllTgxFilesAsync(tgxDirectory);
+
+                // Показать результат
+                await ShowMessageBox(MessageBoxWindow.MessageTyp.Info,
+                    string.Format(Utility.GetText("ConvertAllTgxResult"), result.SuccessCount, result.TotalCount, 
+                        result.ErrorMessages.Count > 0 ? "\nErrors:\n" + string.Join("\n", result.ErrorMessages) : ""));
+
+                // Открыть папку с результатами, если настроено
+                if (vm.UserConfig.OpenFolderAfterExport)
+                {
+                    Process.Start("explorer.exe", Path.Combine(vm.UserConfig.WorkFolderPath, "ExportedTGX"));
+                }
+
+                vm.LoadWorkfolderFiles();
+            }
+            catch (Exception ex)
+            {
+                if (Logger.Loggeractiv) Logger.Log($"Exception in MenuItem_ConvertAllTgx_Click: {ex.Message}");
+                await ShowMessageBox(MessageBoxWindow.MessageTyp.Error, Utility.GetText("ErrorConvertingTgx") + $": {ex.Message}");
+            }
+            finally
+            {
+                vm.ButtonsEnabled = true;
+                Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Arrow);
+                this.FindControl<ProgressBar>("ConversionProgress").IsVisible = false;
+            }
+        }
+
+        // Вспомогательный метод ShowMessageBox
+        private async Task ShowMessageBox(MessageBoxWindow.MessageTyp type, string message)
+        {
+            var messageBox = new MessageBoxWindow(type, message);
+            await messageBox.ShowDialog(this);
+        }
+
         private async void ImportOffsetsFromFile(object sender, RoutedEventArgs e)
         {
             String path = vm.UserConfig.WorkFolderPath + Path.DirectorySeparatorChar + "Offsets.json";
