@@ -1,4 +1,4 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:Gm1KonverterCrossPlatform.ViewModels;assembly=Gm1KonverterCrossPlatform"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -15,7 +15,7 @@
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
-  <Grid Classes="Main" RowDefinitions="Auto,1,Auto,1,*">
+  <Grid Classes="Main" RowDefinitions="Auto,1,Auto,1,*,Auto">
     <DockPanel Dock="Left" Grid.Row="0" Classes="TextMenu">
       <Menu>
         <MenuItem Header="{DynamicResource File}">
@@ -24,6 +24,12 @@
           <Separator/>
           <MenuItem Header="{DynamicResource CreatenewTgx}" Name="CreatenewTgxMenueItem" IsEnabled="{Binding TgxButtonExportEnabled}" Click="CreatenewTgx"/>
           <MenuItem Header="{DynamicResource ReplacewithSavedTgxFile}" Name="ReplacewithSavedTgxFileMenueItem" IsEnabled="{Binding ReplaceWithSaveFileTgx}" Click="ReplacewithSavedTgxFile"/>
+          <Separator/>
+          <MenuItem Header="{DynamicResource ConvertAllTgx}" Name="ConvertAllTgxMenueItem" IsEnabled="{Binding ButtonsEnabled}" Click="MenuItem_ConvertAllTgx_Click">
+            <MenuItem.Icon>
+              <Image Source="/Assets/ExportTgxImage.png" Width="16" Height="16"/>
+            </MenuItem.Icon>
+          </MenuItem>
         </MenuItem>
 
         <MenuItem Header="{DynamicResource Edit}">
@@ -34,7 +40,7 @@
           <MenuItem Header="{DynamicResource ImportImages}" Name="ImportImagesMenueItem" IsEnabled="{Binding ImportButtonEnabled}" Click="ImportImages"/>
           <Separator/>
           <MenuItem Header="{DynamicResource ImageSize}" Name="BigImageSizeMenueItem" IsEnabled="{Binding ButtonsEnabled}">
-            <TextBox Name="BigImageSizeTeytItem" Width="100" Text="{Binding BigImageWidth}" />
+            <TextBox Name="BigImageSizeTeytItem" Width="100" Text="{Binding BigImageWidth}"/>
           </MenuItem>
           <MenuItem Header="{DynamicResource ExportBigImage}" Name="ExportBigImageMenueItem" IsEnabled="{Binding ButtonsEnabled}" Click="ExportBigImage"/>
           <MenuItem Header="{DynamicResource ImportBigImage}" Name="ImportBigImageMenueItem" IsEnabled="{Binding ImportButtonEnabled}" Click="ImportBigImage"/>
@@ -42,7 +48,7 @@
           <MenuItem Header="{DynamicResource ExportTgxImage}" Name="ExportTgxImageMenueItem" IsEnabled="{Binding TgxButtonExportEnabled}" Click="ExportTgxImage"/>
           <MenuItem Header="{DynamicResource ImportTgxImage}" Name="ImportTgxImageMenueItem" IsEnabled="{Binding TgxButtonImportEnabled}" Click="ImportTgxImage"/>
           <Separator/>
-          <MenuItem Header="{DynamicResource ImportOffsetsFromFile}" Name="ImportOffsetsFromFileMenueItem" Click="ImportOffsetsFromFile" />
+          <MenuItem Header="{DynamicResource ImportOffsetsFromFile}" Name="ImportOffsetsFromFileMenueItem" Click="ImportOffsetsFromFile"/>
           <Separator/>
           <MenuItem Header="{DynamicResource ExportOrginalStrongholdAnimation}" Name="ExportOrginalStrongholdAnimation" IsEnabled="{Binding OrginalStrongholdAnimationButtonEnabled}" Click="ExportOrginalStrongholdAnimation"/>
           <MenuItem Header="{DynamicResource ImportOrginalStrongholdAnimation}" Name="ImportOrginalStrongholdAnimation" IsEnabled="{Binding OrginalStrongholdAnimationButtonEnabled}" Click="ImportOrginalStrongholdAnimation"/>
@@ -177,7 +183,7 @@
         <ListBox IsVisible="{Binding GfxPreviewTrue}" Items="{Binding GfxFiles}" SelectionMode="Single" Name="GfxFilesSelector" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.Column="0" Grid.Row="2" SelectionChanged="SelectedGfxFile"/>
       </Grid>
 
-      <Grid Grid.Column="2" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnDefinitions="*">
+      <Grid Grid.Column="2" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto">
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" IsVisible="{Binding FileSelected}" Grid.Row="0" Grid.Column="0">
           <TextBlock Text="{DynamicResource Datatype}"/>
           <TextBlock Text=" "/>
@@ -209,7 +215,7 @@
               </StackPanel>
             </StackPanel>
 
-            <Button Name="GifExporter"  Content="{DynamicResource ExportGif}" Click="Button_ClickGifExporter"/>
+            <Button Name="GifExporter" Content="{DynamicResource ExportGif}" Click="Button_ClickGifExporter"/>
           </StackPanel>
         </Expander>
 
@@ -345,13 +351,15 @@
           </StackPanel>
         </Expander>
 
-        <ListBox Items="{Binding TGXImages}" Name="TGXImageListBox"  SelectionMode="Multiple" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.Row="6" Grid.Column="0" SelectionChanged="TGXImageChanged">
+        <ListBox Items="{Binding TGXImages}" Name="TGXImageListBox" SelectionMode="Multiple" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.Row="6" Grid.Column="0" SelectionChanged="TGXImageChanged">
           <ListBox.ItemsPanel>
             <ItemsPanelTemplate>
               <WrapPanel Orientation="Horizontal"/>
             </ItemsPanelTemplate>
           </ListBox.ItemsPanel>
         </ListBox>
+
+        <ProgressBar x:Name="ConversionProgress" Minimum="0" Maximum="100" Value="{Binding ConversionProgress}" IsVisible="False" Margin="5" Grid.Row="6" Grid.Column="0"/>
       </Grid>
     </Grid>
   </Grid>
