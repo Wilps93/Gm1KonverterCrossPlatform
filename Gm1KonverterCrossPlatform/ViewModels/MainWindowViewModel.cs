@@ -11,6 +11,7 @@ using Gm1KonverterCrossPlatform.Files.Converters;
 using Gm1KonverterCrossPlatform.Views;
 using Gm1KonverterCrossPlatform.HelperClasses;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace Gm1KonverterCrossPlatform.ViewModels
 {
